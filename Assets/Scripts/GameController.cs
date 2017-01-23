@@ -17,6 +17,7 @@ public class GameController : MonoBehaviour
 	// Player
 	private PlayerController player = null;
 	private CameraController cam = null;
+	private ZombieFollow zombies = null;
 
 	// Streets
 	private ObstacleSpawner[] streets;
@@ -120,6 +121,11 @@ public class GameController : MonoBehaviour
 		if (tmp != null)
 		{
 			cam = tmp.GetComponent<CameraController>();
+		}
+		tmp = GameObject.Find("Zombies");
+		if (tmp != null)
+		{
+			zombies = tmp.GetComponent<ZombieFollow>();
 		}
 		streets = new ObstacleSpawner[2];
 		tmp = GameObject.Find("StreetA");
@@ -280,6 +286,7 @@ public class GameController : MonoBehaviour
 			case State.TRANSITION_INGAME_GAMEOVER:
 				{
 					player.Stop();
+					zombies.SetDead();
 					textGameover.color = new Color(218.0f / 255.0f, 0.0f, 0.0f, 1.0f);
 					PlayerPrefs.SetInt("highscore", (int)highscore);
 					if(score > sessionscore)

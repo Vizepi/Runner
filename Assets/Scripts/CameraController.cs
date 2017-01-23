@@ -69,6 +69,9 @@ public class CameraController : MonoBehaviour
 			else
 			{
 				dead = true;
+				offset = 0.0f;
+				offsetTimer = 0.0f;
+				changingOffset = true;
 				break;
 			}
 		}
