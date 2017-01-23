@@ -159,9 +159,9 @@ public class GameController : MonoBehaviour
 		textReset.color = new Color(1.0f, 1.0f, 1.0f, 0.0f);
 
 		// Initialize UI
-		textHigh.text = "HIGH:   " + highscore;
-		textHighscore.text = "HIGHSCORE: " + score;
-		textSession.text = "SESSION BEST: " + sessionscore;
+		textHigh.text = "HIGH:   " + IntToString(highscore);
+		textHighscore.text = "HIGHSCORE: " + IntToString(highscore);
+		textSession.text = "SESSION BEST: " + IntToString(sessionscore);
 		score = 0;
 
 		// Initialize streets
@@ -169,6 +169,23 @@ public class GameController : MonoBehaviour
 
 		// Initialize state
 		state = State.MAINMENU;
+	}
+
+	string IntToString(uint i)
+	{
+		string s = "";
+		int count = 0;
+		do
+		{
+			s = "" + (i % 10) + s;
+			i /= 10;
+			count++;
+			if (count % 3 == 0 && i != 0)
+			{
+				s = ' ' + s;
+			}
+		} while (i != 0);
+		return s;
 	}
 
 	void Update()
@@ -201,11 +218,11 @@ public class GameController : MonoBehaviour
 			case State.INGAME:
 				{
 					score = (uint)Mathf.FloorToInt(Mathf.Max(0.0f, player.transform.position.x));
-					textScore.text = "SCORE: " + score;
+					textScore.text = "SCORE: " + IntToString(score);
 					if (score > highscore)
 					{
 						highscore = score;
-						textHigh.text = "HIGH:   " + score;
+						textHigh.text = "HIGH:   " + IntToString(score);
 					}
 					if(score > streets[currentStreet].transform.position.x + 45.0f)
 					{

@@ -29,6 +29,9 @@ public class PlayerController : MonoBehaviour
 
 	private float stateTimer;
 	private bool running = false;
+	private bool falling = false;
+	private float fallTimer;
+	private Vector3 endPosition;
 
 	void Start()
 	{
@@ -50,6 +53,9 @@ public class PlayerController : MonoBehaviour
 		animator.SetTrigger("die");
 		running = false;
 		transform.position = new Vector3(transform.position.x, -0.2f, 0.0f);
+		falling = true;
+		endPosition = transform.position;
+		fallTimer = 0.0f;
 	}
 
 	void Update()
@@ -100,7 +106,7 @@ public class PlayerController : MonoBehaviour
 					}
 					else
 					{
-						float tmp = 2.8f * stateTimer - 2.0f;
+						float tmp = (2.8f * stateTimer * 1.25f - 2.0f);
 						transform.position = new Vector3(
 							transform.position.x,
 							rollCorrection * Mathf.Clamp((tmp * tmp - 1.0f), -1.0f, 0.0f),
@@ -108,6 +114,13 @@ public class PlayerController : MonoBehaviour
 					}
 				}
 			}
+		}
+		else if(falling)
+		{
+			fallTimer += Time.deltaTime;
+			float tmp = 1.0f - Mathf.Clamp(fallTimer * fallTimer, 0.0f, 1.0f);
+			endPosition += new Vector3(tmp * 0.275f, 0.0f, 0.0f);
+			transform.position = endPosition + new Vector3(0.0f, -2.0f * (1.0f - tmp), 0.0f);
 		}
 	}
 }
