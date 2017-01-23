@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class GameController : MonoBehaviour
 	private Text textPlay = null;
 	private Text textSession = null;
 	private Text textGameover = null;
+	private Text textReset = null;
 
 	// Player
 	private PlayerController player = null;
@@ -61,6 +63,7 @@ public class GameController : MonoBehaviour
 	void FirstInitialize()
 	{
 		//TODO load highscore
+		highscore = (uint)PlayerPrefs.GetInt("highscore", 0);
 		Initialize();
 		state = State.SPLASHS;
 	}
@@ -103,6 +106,11 @@ public class GameController : MonoBehaviour
 		{
 			textGameover = tmp.GetComponent<Text>();
 		}
+		tmp = GameObject.Find("Reset");
+		if (tmp != null)
+		{
+			textReset = tmp.GetComponent<Text>();
+		}
 		tmp = GameObject.Find("Player");
 		if (tmp != null)
 		{
@@ -133,18 +141,28 @@ public class GameController : MonoBehaviour
 		Debug.Assert(textPlay != null);
 		Debug.Assert(textSession != null);
 		Debug.Assert(textGameover != null);
+		Debug.Assert(textReset != null);
 		Debug.Assert(player != null);
 		Debug.Assert(cam != null);
 		Debug.Assert(streets[0] != null);
 		Debug.Assert(streets[1] != null);
 
-		// Reinitialize Canvas
+		// Initialize Canvas
 		textTitle.color = new Color(161.0f / 255.0f, 0.0f, 0.0f, 1.0f);
 		textHighscore.color =
 		textSession.color =
 		textPlay.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 
-		textScore.color = textHigh.color = textGameover.color = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+		textScore.color = 
+		textHigh.color = 
+		textGameover.color = 
+		textReset.color = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+
+		// Initialize UI
+		textHigh.text = "HIGH:   " + highscore;
+		textHighscore.text = "HIGHSCORE: " + score;
+		textSession.text = "SESSION BEST: " + sessionscore;
+		score = 0;
 
 		// Initialize streets
 		streets[0].Initialize();
@@ -169,6 +187,10 @@ public class GameController : MonoBehaviour
 					{
 						state = State.TRANSITION_MAINMENU_INGAME;
 					}
+					else if(Input.GetKeyDown(KeyCode.Escape))
+					{
+						Application.Quit();
+					}
 				}
 				break;
 			case State.CREDITS:
@@ -184,7 +206,6 @@ public class GameController : MonoBehaviour
 					{
 						highscore = score;
 						textHigh.text = "HIGH:   " + score;
-						textHighscore.text = "HIGHSCORE: " + score;
 					}
 					if(score > streets[currentStreet].transform.position.x + 45.0f)
 					{
@@ -203,11 +224,25 @@ public class GameController : MonoBehaviour
 				break;
 			case State.GAMEOVER:
 				{
-					textGameover.color = new Color(218.0f / 255.0f, 0.0f, 0.0f, 1.0f);
+					textReset.color = new Color(1.0f, 1.0f, 1.0f, 0.6f + 0.4f * Mathf.Sin(Time.time * 5.0f));
+					if (Input.GetKeyDown(KeyCode.Return))
+					{
+						state = State.TRANSITION_GAMEOVER_MAINMENU;
+					}
 				}
 				break;
 			case State.TRANSITION_SPLASHS_MAINMENU:
 				{
+					textTitle.color = new Color(161.0f / 255.0f, 0.0f, 0.0f, 1.0f);
+					textHighscore.color =
+					textSession.color =
+					textPlay.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+
+					textScore.color =
+					textHigh.color =
+					textGameover.color =
+					textReset.color = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+
 					state = State.MAINMENU;
 				}
 				break;
@@ -228,11 +263,19 @@ public class GameController : MonoBehaviour
 			case State.TRANSITION_INGAME_GAMEOVER:
 				{
 					player.Stop();
+					textGameover.color = new Color(218.0f / 255.0f, 0.0f, 0.0f, 1.0f);
+					PlayerPrefs.SetInt("highscore", (int)highscore);
+					if(score > sessionscore)
+					{
+						sessionscore = score;
+					}
 					state = State.GAMEOVER;
 				}
 				break;
 			case State.TRANSITION_GAMEOVER_MAINMENU:
 				{
+					textReset.color = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+					SceneManager.LoadScene("Game");
 					state = State.MAINMENU;
 				}
 				break;

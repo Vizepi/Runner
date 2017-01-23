@@ -26,6 +26,11 @@ public class ObstacleSpawner : MonoBehaviour
 		Debug.Assert(buildingPosition != null);
 	}
 
+	int Rand(int size)
+	{
+		return (int)(size * Random.value * 0.999999f);
+	}
+
 	public void Initialize()
 	{
 		maxQuantity = (uint)Mathf.Min(maxQuantity, spawns.Length);
@@ -42,24 +47,24 @@ public class ObstacleSpawner : MonoBehaviour
 
 		// Get all transform positions
 		List<Transform> remainingTransforms = new List<Transform>(spawns);
-		uint spawnCount = (uint)Random.Range(minQuantity, maxQuantity);
+		uint spawnCount = (uint)(minQuantity + Rand((int)maxQuantity - (int)minQuantity + 1));
 		for(uint i = 0; i < spawnCount; ++i)
 		{
 			// Choose a transform and remove it from free ones
-			int rand = (int)Random.Range(0, remainingTransforms.Count - 0.0001f);
+			int rand = Rand(remainingTransforms.Count);
 			Transform current = remainingTransforms[rand];
 			remainingTransforms.Remove(current);
 
 			// Instantiate an obstacle at the position
-			GameObject go = Instantiate(obstacles[(int)Random.Range(0, obstacles.Length - 0.0001f)]);
+			GameObject go = Instantiate(obstacles[Rand(obstacles.Length)]);
 			go.transform.position = current.position;
 			instances.Add(go);
 
-			// Instantiate building
-			GameObject building = Instantiate(buildings[(int)Random.Range(0, buildings.Length - 0.0001f)]);
-			building.transform.position = buildingPosition.position;
-			instances.Add(building);
-
 		}
+
+		// Instantiate building
+		GameObject building = Instantiate(buildings[Rand(buildings.Length)]);
+		building.transform.position = buildingPosition.position;
+		instances.Add(building);
 	}
 }

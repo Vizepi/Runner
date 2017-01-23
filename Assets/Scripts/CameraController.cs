@@ -57,21 +57,17 @@ public class CameraController : MonoBehaviour
 
 	public void DownOffset(int count = 1)
 	{
-		Debug.Log("A");
 		previousOffset = offset;
 		for (int i = 0; i < count; ++i)
 		{
-			Debug.Log("B");
 			if (offset < 3 * offsetStep)
 			{
-				Debug.Log("C");
 				offset += offsetStep;
 				offsetTimer = 0.0f;
 				changingOffset = true;
 			}
 			else
 			{
-				Debug.Log("D");
 				dead = true;
 				break;
 			}
