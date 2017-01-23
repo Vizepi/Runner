@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 6c0f3c597bb32d34d87ccc718833bf16
+timeCreated: 1485177395
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: ZombieTreats
+  fontNames:
+  - ZombieTreats
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
