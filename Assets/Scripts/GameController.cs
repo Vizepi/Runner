@@ -13,11 +13,15 @@ public class GameController : MonoBehaviour
 	private Text textSession = null;
 	private Text textGameover = null;
 	private Text textReset = null;
+	[SerializeField]
+	private Texture fader = null;
 
 	// Player
 	private PlayerController player = null;
 	private CameraController cam = null;
 	private ZombieFollow zombies = null;
+	private Transform camStart = null;
+	private Transform camGame = null;
 
 	// Streets
 	private ObstacleSpawner[] streets;
@@ -44,6 +48,7 @@ public class GameController : MonoBehaviour
 		TRANSITION_CREDITS_MAINMENU
 	};
 	private State state = State.SPLASHS;
+	private float stateTimer;
 
 	// Instance
 	static GameController instance = null;
@@ -63,10 +68,15 @@ public class GameController : MonoBehaviour
 
 	void FirstInitialize()
 	{
-		//TODO load highscore
 		highscore = (uint)PlayerPrefs.GetInt("highscore", 0);
 		Initialize();
-		state = State.SPLASHS;
+		SetState(State.SPLASHS);
+	}
+
+	void SetState(State s)
+	{
+		stateTimer = 0.0f;
+		state = s;
 	}
 
 	void Initialize()
@@ -127,6 +137,16 @@ public class GameController : MonoBehaviour
 		{
 			zombies = tmp.GetComponent<ZombieFollow>();
 		}
+		tmp = GameObject.Find("CameraSpawn");
+		if (tmp != null)
+		{
+			camGame = tmp.GetComponent<Transform>();
+		}
+		tmp = GameObject.Find("CameraMenu");
+		if (tmp != null)
+		{
+			camStart = tmp.GetComponent<Transform>();
+		}
 		streets = new ObstacleSpawner[2];
 		tmp = GameObject.Find("StreetA");
 		if (tmp != null)
@@ -150,8 +170,12 @@ public class GameController : MonoBehaviour
 		Debug.Assert(textReset != null);
 		Debug.Assert(player != null);
 		Debug.Assert(cam != null);
+		Debug.Assert(zombies != null);
+		Debug.Assert(camStart != null);
+		Debug.Assert(camGame != null);
 		Debug.Assert(streets[0] != null);
 		Debug.Assert(streets[1] != null);
+		Debug.Assert(fader != null);
 
 		// Initialize Canvas
 		textTitle.color = new Color(161.0f / 255.0f, 0.0f, 0.0f, 1.0f);
@@ -172,9 +196,11 @@ public class GameController : MonoBehaviour
 
 		// Initialize streets
 		streets[0].Initialize();
+		cam.transform.position = camStart.position;
+		cam.transform.rotation  = camStart.rotation;
 
 		// Initialize state
-		state = State.MAINMENU;
+		SetState(State.MAINMENU);
 	}
 
 	string IntToString(uint i)
@@ -194,21 +220,36 @@ public class GameController : MonoBehaviour
 		return s;
 	}
 
+	void OnGUI()
+	{
+		switch(state)
+		{
+			case State.SPLASHS:
+				break;
+			case State.TRANSITION_SPLASHS_MAINMENU:
+				GUI.color = new Color(1.0f, 1.0f, 1.0f, Mathf.Clamp(2.0f - stateTimer, 0.0f, 1.0f));
+				GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), fader);
+				break;
+		}
+	}
+
 	void Update()
 	{
 		switch (state)
 		{
 			case State.SPLASHS:
 				{
-					state = State.TRANSITION_SPLASHS_MAINMENU;
+					SetState(State.TRANSITION_SPLASHS_MAINMENU);
 				}
 				break;
 			case State.MAINMENU:
 				{
 					textPlay.color = new Color(1.0f, 1.0f, 1.0f, 0.6f + 0.4f * Mathf.Sin(Time.time * 5.0f));
+					cam.transform.position = camStart.position;
+					cam.transform.rotation = camStart.rotation;
 					if (Input.GetKeyDown(KeyCode.Return))
 					{
-						state = State.TRANSITION_MAINMENU_INGAME;
+						SetState(State.TRANSITION_MAINMENU_INGAME);
 					}
 					else if(Input.GetKeyDown(KeyCode.Escape))
 					{
@@ -218,7 +259,7 @@ public class GameController : MonoBehaviour
 				break;
 			case State.CREDITS:
 				{
-					state = State.TRANSITION_CREDITS_MAINMENU;
+					SetState(State.TRANSITION_CREDITS_MAINMENU);
 				}
 				break;
 			case State.INGAME:
@@ -241,7 +282,7 @@ public class GameController : MonoBehaviour
 					}
 					if (cam.IsDead())
 					{
-						state = State.TRANSITION_INGAME_GAMEOVER;
+						SetState(State.TRANSITION_INGAME_GAMEOVER);
 					}
 				}
 				break;
@@ -250,7 +291,7 @@ public class GameController : MonoBehaviour
 					textReset.color = new Color(1.0f, 1.0f, 1.0f, 0.6f + 0.4f * Mathf.Sin(Time.time * 5.0f));
 					if (Input.GetKeyDown(KeyCode.Return))
 					{
-						state = State.TRANSITION_GAMEOVER_MAINMENU;
+						SetState(State.TRANSITION_GAMEOVER_MAINMENU);
 					}
 				}
 				break;
@@ -266,21 +307,43 @@ public class GameController : MonoBehaviour
 					textGameover.color =
 					textReset.color = new Color(1.0f, 1.0f, 1.0f, 0.0f);
 
-					state = State.MAINMENU;
+					cam.transform.position = camStart.position;
+					cam.transform.rotation = camStart.rotation;
+
+					stateTimer += Time.deltaTime;
+					if (stateTimer >= 2.0f)
+					{
+						SetState(State.MAINMENU);
+					}
 				}
 				break;
 			case State.TRANSITION_MAINMENU_INGAME:
 				{
-					textTitle.color =
-					textHighscore.color =
-					textSession.color =
-					textPlay.color = new Color(1.0f, 1.0f, 1.0f, 0.0f);
+					if (stateTimer == 0.0f)
+					{
+						textTitle.color =
+						textHighscore.color =
+						textSession.color =
+						textPlay.color = new Color(1.0f, 1.0f, 1.0f, 0.0f);
 
-					textScore.color = textHigh.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-					player.Play();
-					streets[0].Initialize();
+						textScore.color = textHigh.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 
-					state = State.INGAME;
+						camStart.GetComponent<Looker>().enabled = false;
+					}
+
+					stateTimer += Time.deltaTime;
+					cam.transform.position = Vector3.Lerp(camStart.position, camGame.position, stateTimer / 2.0f);
+					cam.transform.rotation = Quaternion.Slerp(camStart.rotation, camGame.rotation, stateTimer / 2.0f);
+					if(stateTimer >= 2.0f)
+					{
+						player.Play();
+						zombies.Play();
+						streets[0].Initialize();
+						cam.transform.position = camGame.position;
+						cam.transform.rotation = camGame.rotation;
+						SetState(State.INGAME);
+						cam.Play();
+					}
 				}
 				break;
 			case State.TRANSITION_INGAME_GAMEOVER:
@@ -293,24 +356,24 @@ public class GameController : MonoBehaviour
 					{
 						sessionscore = score;
 					}
-					state = State.GAMEOVER;
+					SetState(State.GAMEOVER);
 				}
 				break;
 			case State.TRANSITION_GAMEOVER_MAINMENU:
 				{
 					textReset.color = new Color(1.0f, 1.0f, 1.0f, 0.0f);
 					SceneManager.LoadScene("Game");
-					state = State.MAINMENU;
+					SetState(State.MAINMENU);
 				}
 				break;
 			case State.TRANSITION_MAINMENU_CREDITS:
 				{
-					state = State.CREDITS;
+					SetState(State.CREDITS);
 				}
 				break;
 			case State.TRANSITION_CREDITS_MAINMENU:
 				{
-					state = State.MAINMENU;
+					SetState(State.MAINMENU);
 				}
 				break;
 		}

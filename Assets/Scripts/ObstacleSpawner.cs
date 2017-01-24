@@ -12,6 +12,10 @@ public class ObstacleSpawner : MonoBehaviour
 	[SerializeField]
 	private Transform buildingPosition = null;
 	[SerializeField]
+	private GameObject[] cars = null;
+	[SerializeField]
+	private Transform[] carPositions = null;
+	[SerializeField]
 	private uint minQuantity = 10;
 	[SerializeField]
 	private uint maxQuantity = 30;
@@ -24,11 +28,13 @@ public class ObstacleSpawner : MonoBehaviour
 		Debug.Assert(spawns != null && spawns.Length > 0);
 		Debug.Assert(buildings != null && buildings.Length > 0);
 		Debug.Assert(buildingPosition != null);
+		/*Debug.Assert(cars != null && cars.Length > 0);
+		Debug.Assert(carPositions != null && carPositions.Length > 0);*/
 	}
 
 	int Rand(int size)
 	{
-		return (int)(size * Random.value * 0.999999f);
+		return (int)(size * Random.value * 0.9999f);
 	}
 
 	public void Initialize()
@@ -66,5 +72,17 @@ public class ObstacleSpawner : MonoBehaviour
 		GameObject building = Instantiate(buildings[Rand(buildings.Length)]);
 		building.transform.position = buildingPosition.position;
 		instances.Add(building);
+
+		// Instantiate cars
+		for(uint i = 0; i < carPositions.Length; ++i)
+		{
+			if(Random.value < 0.4f)
+			{
+				GameObject car = Instantiate(cars[Rand(cars.Length)]);
+				car.transform.position = carPositions[i].position;
+				car.transform.rotation = Quaternion.Euler(0.0f, Random.value * 365.0f, 0.0f);
+				instances.Add(car);
+			}
+		}
 	}
 }

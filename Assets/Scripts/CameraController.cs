@@ -16,34 +16,43 @@ public class CameraController : MonoBehaviour
 	private float offsetTimer;
 	private bool changingOffset;
 	private bool dead = false;
+	private bool ingame = false;
 
 	void Start()
 	{
 		Debug.Assert(target != null);
 	}
+
+	public void Play()
+	{
+		ingame = true;
+	}
 	
 	void Update()
 	{
-		if (changingOffset)
+		if (ingame)
 		{
-			offsetTimer += Time.deltaTime;
-			float x = offsetTimer / offsetChangeSpeed;
-			x = 1.0f - x * x;
-			transform.position = new Vector3(
-				target.position.x + previousOffset + (offset - previousOffset) * (1.0f - x * x * x), 
-				transform.position.y, 
-				transform.position.z);
-			if(offsetTimer >= offsetChangeSpeed)
+			if (changingOffset)
 			{
-				changingOffset = false;
+				offsetTimer += Time.deltaTime;
+				float x = offsetTimer / offsetChangeSpeed;
+				x = 1.0f - x * x;
+				transform.position = new Vector3(
+					target.position.x + previousOffset + (offset - previousOffset) * (1.0f - x * x * x),
+					transform.position.y,
+					transform.position.z);
+				if (offsetTimer >= offsetChangeSpeed)
+				{
+					changingOffset = false;
+				}
 			}
-		}
-		else
-		{
-			transform.position = new Vector3(
-				target.position.x + offset, 
-				transform.position.y, 
-				transform.position.z);
+			else
+			{
+				transform.position = new Vector3(
+					target.position.x + offset,
+					transform.position.y,
+					transform.position.z);
+			}
 		}
 	}
 
